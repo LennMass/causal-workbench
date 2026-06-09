@@ -3,13 +3,6 @@ Phase 1 — Data pipeline with Polars.
 
 Loads raw CSV, validates structure, cleans data, and returns arrays
 ready for DoubleML estimation.
-
-LEARN:
-  - polars.scan_csv / read_csv (lazy vs eager)
-  - expressions: pl.col(), .filter(), .with_columns()
-  - handling nulls: .fill_null(), .drop_nulls()
-  - categorical encoding without pandas get_dummies
-  - converting to numpy for sklearn/DoubleML compatibility
 """
 
 from pathlib import Path
@@ -37,7 +30,7 @@ def load_and_validate(
     outcome_col: str,
 ) -> pl.DataFrame:
     """Load CSV with Polars and validate that required columns exist."""
-    df = pl.read_csv(path)
+    df = pl.scan_csv(path).collect()
 
     missing = {treatment_col, outcome_col} - set(df.columns)
     if missing:
@@ -87,6 +80,20 @@ def prepare_for_doubleml(
         n_features=X.shape[1],
     )
 
+def log_summary(df: pl.DataFrame) -> None:
+    """Print summary statistics for all numerical columns."""
+    numeric_cols = [c for c in df.columns if df[c].dtype in (pl.Float64, pl.Int64, pl.Float32, pl.Int32)]
+    summary = df.select(
+        pl.col(numeric_cols).mean().name.prefix("mean_"),
+        pl.col(numeric_cols).std().name.prefix("std_"),
+        pl.col(numeric_cols).min().name.prefix("min_"), 
+        pl.col(numeric_cols).max().name.prefix("max_"),
+    )
+    print("\n--- Summary Statistics for Numeric Vars ---")
+    print(summary)
+
+
+
 
 def run_pipeline(
     path: str | Path,
@@ -95,7 +102,10 @@ def run_pipeline(
 ) -> PreparedData:
     """Full pipeline: load → clean → prepare."""
     df = load_and_validate(path, treatment_col, outcome_col)
+    log_summary(df) # print summary stats for numerics
+    print(f"Nulls before cleaning: {df.null_count()}")
     df = clean_data(df)
+    print(f"Nulls before cleaning: {df.null_count()}")
     data = prepare_for_doubleml(df, treatment_col, outcome_col)
     print(f"Prepared: {data.n_obs} observations, {data.n_features} features")
     return data
