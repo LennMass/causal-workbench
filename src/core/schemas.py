@@ -1,15 +1,14 @@
 """
-Phase 2 — Pydantic models for data validation and serialization.
+Pydantic models for data validation and serialization.
 
 These schemas define the contract for everything flowing through the system:
 requests, responses, and internal data structures.
 
-LEARN:
-  - Pydantic BaseModel with type annotations
-  - Field validators and constraints
-  - Enum types for controlled vocabularies
-  - model_dump() / model_validate() for serialization
-  - How FastAPI uses these automatically in Phase 3
+- Pydantic BaseModel with type annotations
+- Field validators and constraints
+- Enum types for controlled vocabularies
+- model_dump() / model_validate() for serialization
+- How FastAPI uses these automatically
 """
 
 from enum import Enum
@@ -47,6 +46,10 @@ class AnalysisRequest(BaseModel):
     outcome_col: str = Field(
         default="outcome",
         description="Name of the continuous outcome column",
+    )
+    description: str | None = Field(
+        default=None,
+        description="Optional description of the analysis"
     )
     estimator: EstimatorType = Field(
         default=EstimatorType.PLR,
