@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "causal-workbench"
+version = "0.1.0"
+description = "Causal inference workbench — learn Python ML tools phase by phase"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+dependencies = [
+    "polars>=1.0",
+    "doubleml>=0.9",
+    "scikit-learn>=1.4",
+]
+
+[project.optional-dependencies]
+phase1 = [
+    "polars>=1.0",
+    "doubleml>=0.9",
+    "scikit-learn>=1.4",
+    "tabpfn>=2.0",
+]
+phase2 = [
+    "causal-workbench[phase1]",
+    "pydantic>=2.0",
+]
+phase3 = [
+    "causal-workbench[phase2]",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+]
+phase4 = [
+    "causal-workbench[phase3]",
+    "torch>=2.2",
+    "skorch>=1.0",
+]
+phase5 = [
+    "causal-workbench[phase4]",
+    "sentence-transformers>=3.0",
+]
+phase6 = [
+    "causal-workbench[phase5]",
+    "celery[redis]>=5.4",
+]
+phase7 = [
+    "causal-workbench[phase6]",
+    "pydantic-ai>=0.1",
+    "anthropic>=0.30",
+]
+all = ["causal-workbench[phase7]"]
+dev = [
+    "causal-workbench[all]",
+    "pytest>=8.0",
+    "httpx>=0.27",
+    "ruff>=0.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
