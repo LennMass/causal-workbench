@@ -1,5 +1,5 @@
 """
-Phase 1 — Data pipeline with Polars.
+Data pipeline with Polars.
 
 Loads raw CSV, validates structure, cleans data, and returns arrays
 ready for DoubleML estimation.
