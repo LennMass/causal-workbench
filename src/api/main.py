@@ -1,5 +1,5 @@
 """
-Phase 3 — FastAPI REST API.
+FastAPI REST API.
 
 Serves the causal pipeline over HTTP. Upload a CSV, configure the analysis,
 get results. Auto-generated interactive docs at /docs.

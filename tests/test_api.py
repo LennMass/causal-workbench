@@ -1,4 +1,4 @@
-"""Tests for Phase 3: FastAPI endpoints.
+"""Tests for FastAPI endpoints.
 
 Uses httpx + FastAPI TestClient for async testing.
 Install: pip install httpx
