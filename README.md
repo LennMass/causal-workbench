@@ -20,7 +20,7 @@ A self-hosted API for causal treatment effect estimation with DoubleML and TabPF
 ### 1. Clone and open the project
 
 ```bash
-git clone <your-repo-url> causal-workbench
+git clone https://github.com/LennMass/causal-workbench causal-workbench
 cd causal-workbench
 code .
 ```
