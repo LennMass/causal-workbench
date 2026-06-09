@@ -4,12 +4,7 @@ Phase 3 — FastAPI REST API.
 Serves the causal pipeline over HTTP. Upload a CSV, configure the analysis,
 get results. Auto-generated interactive docs at /docs.
 
-LEARN:
-  - FastAPI app creation and route decorators
-  - File uploads with UploadFile
-  - Pydantic models as request bodies and response types
-  - Dependency injection (future: auth, DB sessions)
-  - How to run with: uvicorn src.api.main:app --reload
+Run with: uvicorn src.api.main:app --reload
 
 ENDPOINTS:
   GET  /                → health check
@@ -53,7 +48,7 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
-# Helper: save upload to temp file and run pipeline
+# Helper: save upload to temp file and run pipeline; file size validation
 # ---------------------------------------------------------------------------
 
 async def _save_upload(file: UploadFile) -> Path:
@@ -63,6 +58,14 @@ async def _save_upload(file: UploadFile) -> Path:
     tmp.write(content)
     tmp.flush()
     return Path(tmp.name)
+
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+async def validate_file_size(file: UploadFile) -> None:
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File exceeds 10MB limit")
+    await file.seek(0)  # reset to start so the file can be read again
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +85,36 @@ def list_estimators():
         "learners": [l.value for l in LearnerType],
     }
 
+@app.post("/info", response_model=DatasetInfo)
+async def dataset_info(
+    file: UploadFile = File(...),
+    treatment_col: str = "treatment",
+    outcome_col: str = "outcome",
+):
+    """Upload a CSV and get a summary of the dataset."""
+
+    await validate_file_size(file)
+    path = await _save_upload(file)
+
+    try:
+        import polars as pl
+        df = pl.read_csv(path)
+
+        missing = {treatment_col, outcome_col} - set(df.columns)
+        if missing:
+            raise HTTPException(status_code=422, detail=f"Missing columns: {missing}")
+
+        return DatasetInfo(
+            n_rows=df.shape[0],
+            n_columns=df.shape[1],
+            columns=df.columns,
+            treatment_col=treatment_col,
+            outcome_col=outcome_col,
+            n_treated=int(df[treatment_col].sum()),
+            n_control=int(df.shape[0] - df[treatment_col].sum()),
+        )
+    finally:
+        path.unlink(missing_ok=True)
 
 @app.post("/analyze", response_model=CausalResult)
 async def analyze(
@@ -95,6 +128,7 @@ async def analyze(
 ):
     """Upload a CSV and run a causal analysis."""
 
+    await validate_file_size(file)
     path = await _save_upload(file)
 
     try:
@@ -133,6 +167,7 @@ async def compare_learners(
 ):
     """Run the same estimator with all available learners and compare."""
 
+    await validate_file_size(file)
     path = await _save_upload(file)
 
     try:

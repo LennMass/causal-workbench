@@ -93,25 +93,7 @@ def log_summary(df: pl.DataFrame) -> None:
     print(summary)
 
 
-# from schemas.py
-from src.core.schemas import DatasetSummary, ColumnStats
 
-def summarize_dataset(df: pl.DataFrame) -> DatasetSummary:
-    numeric_cols = [c for c in df.columns if df[c].dtype in (pl.Float64, pl.Int64, pl.Float32, pl.Int32)]
-    stats = []
-    for col in numeric_cols:
-        stats.append(ColumnStats(
-            name=col,
-            mean=df[col].mean(),
-            std=df[col].std(),
-            min=df[col].min(),
-            max=df[col].max(),
-        ))
-    return DatasetSummary(
-        n_rows=df.shape[0],
-        n_columns=df.shape[1],
-        column_stats=stats,
-    )
 
 
 

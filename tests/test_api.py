@@ -52,6 +52,18 @@ def test_analyze_invalid_column():
         response = client.post(
             "/analyze",
             files={"file": ("sample.csv", f, "text/csv")},
-            data={"treatment_col": "nonexistent"},
+            params={"treatment_col": "nonexistent"},
         )
     assert response.status_code == 422
+
+def test_dataset_info():
+    with open(SAMPLE_FILE, "rb") as f:
+        response = client.post(
+            "/info",
+            files={"file": ("sample.csv", f, "text/csv")},
+            data={"treatment_col": "treatment", "outcome_col": "outcome"},
+        )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["n_rows"] == 30
+    assert data["n_treated"] + data["n_control"] == 30
