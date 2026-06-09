@@ -88,6 +88,7 @@ async def analyze(
     file: UploadFile = File(...),
     treatment_col: str = "treatment",
     outcome_col: str = "outcome",
+    description: str | None = None,
     estimator: EstimatorType = EstimatorType.PLR,
     learner: LearnerType = LearnerType.SKLEARN,
     confidence_level: float = 0.95,

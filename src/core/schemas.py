@@ -103,6 +103,22 @@ class ComparisonResult(BaseModel):
     results: list[CausalResult]
     dataset_info: DatasetInfo
 
+# ---------------------------------------------------------------------------
+# Per-Column Statistics
+# ---------------------------------------------------------------------------
+
+class ColumnStats(BaseModel):
+    name: str
+    mean: float
+    std: float
+    min: float
+    max: float
+
+class DatasetSummary(BaseModel):
+    n_rows: int
+    n_columns: int
+    column_stats: list[ColumnStats]
+
 
 # ---------------------------------------------------------------------------
 # Phase 6 additions (async jobs)
