@@ -28,8 +28,9 @@ from src.core.schemas import (
     EstimatorType,
     LearnerType,
 )
-from src.core.pipeline import run_pipeline
+from src.core.pipeline import run_pipeline, clean_data, prepare_for_doubleml
 from src.core.estimators import run_estimation
+from src.core.text_features import embed_text_column
 
 
 app = FastAPI(
@@ -121,24 +122,27 @@ async def analyze(
     file: UploadFile = File(...),
     treatment_col: str = "treatment",
     outcome_col: str = "outcome",
-    description: str | None = None,
+    text_cols: str | None = None,  # comma-separated: "col1,col2"
     estimator: EstimatorType = EstimatorType.PLR,
     learner: LearnerType = LearnerType.SKLEARN,
     confidence_level: float = 0.95,
 ):
-    """Upload a CSV and run a causal analysis."""
-
-    await validate_file_size(file)
     path = await _save_upload(file)
 
     try:
-        data = run_pipeline(path, treatment_col, outcome_col)
-        result = run_estimation(
-            data,
-            estimator=estimator.value,
-            learner=learner.value,
-            confidence_level=confidence_level,
-        )
+        import polars as pl
+        df = pl.read_csv(path)
+
+        # Embed text columns if provided
+        if text_cols:
+            for col in text_cols.split(","):
+                col = col.strip()
+                if col in df.columns:
+                    df = embed_text_column(df, col)
+
+        df = clean_data(df)
+        data = prepare_for_doubleml(df, treatment_col, outcome_col)
+        result = run_estimation(data, estimator=estimator.value, learner=learner.value, confidence_level=confidence_level)
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
     finally:
@@ -162,16 +166,17 @@ async def compare_learners(
     file: UploadFile = File(...),
     treatment_col: str = "treatment",
     outcome_col: str = "outcome",
+    text_cols: str | None = None,
     estimator: EstimatorType = EstimatorType.PLR,
     confidence_level: float = 0.95,
 ):
     """Run the same estimator with all available learners and compare."""
 
-    await validate_file_size(file)
     path = await _save_upload(file)
 
     try:
-        data = run_pipeline(path, treatment_col, outcome_col)
+        text_col_list = [c.strip() for c in text_cols.split(",")] if text_cols else None
+        data = run_pipeline(path, treatment_col, outcome_col, text_cols=text_col_list)
 
         results = []
         for learner_type in LearnerType:

@@ -28,7 +28,7 @@ class EstimatorType(str, Enum):
 class LearnerType(str, Enum):
     SKLEARN = "sklearn"
     TABPFN = "tabpfn"
-    PYTORCH = "pytorch"
+    #PYTORCH = "pytorch" # currently not implemented
 
 
 # ---------------------------------------------------------------------------

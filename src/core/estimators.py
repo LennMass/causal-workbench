@@ -20,6 +20,27 @@ import doubleml as dml
 
 from src.core.pipeline import PreparedData
 
+import mlflow
+
+def estimate_plr(data, learner="sklearn", confidence_level=0.95):
+    # ... existing code ...
+    model.fit()
+    ci = model.confint(level=confidence_level)
+
+    # Log to MLflow
+    with mlflow.start_run():
+        mlflow.log_param("estimator", "PLR")
+        mlflow.log_param("learner", learner)
+        mlflow.log_param("n_obs", data.n_obs)
+        mlflow.log_param("n_features", data.n_features)
+        mlflow.log_metric("ate", model.coef[0])
+        mlflow.log_metric("std_error", model.se[0])
+        mlflow.log_metric("p_value", model.pval[0])
+        mlflow.log_metric("ci_lower", ci.iloc[0, 0])
+        mlflow.log_metric("ci_upper", ci.iloc[0, 1])
+
+    # ... return CausalEstimate as before
+
 
 @dataclass
 class CausalEstimate:
@@ -70,6 +91,29 @@ def get_learners(name: str = "sklearn", n_features: int = 10) -> tuple:
         raise ValueError(f"Unknown learner '{name}'. Choose from: {list(factories.keys())}")
     return factories[name]()
 
+def _log_to_mlflow(result: CausalEstimate, data: PreparedData) -> None:
+    """Log a causal estimation run to MLflow."""
+    try:
+        mlflow.set_experiment("causal-workbench")
+
+        with mlflow.start_run():
+            # Parameters
+            mlflow.log_param("estimator", result.estimator)
+            mlflow.log_param("learner", result.learner)
+            mlflow.log_param("n_obs", data.n_obs)
+            mlflow.log_param("n_features", data.n_features)
+            mlflow.log_param("confidence_level", result.confidence_level)
+            mlflow.log_param("first 20 feature_names", str(data.feature_names[:20]))
+
+            # Metrics
+            mlflow.log_metric("ate", result.coefficient)
+            mlflow.log_metric("std_error", result.std_error)
+            mlflow.log_metric("ci_lower", result.ci_lower)
+            mlflow.log_metric("ci_upper", result.ci_upper)
+            mlflow.log_metric("p_value", result.p_value)
+            mlflow.log_metric("significant", 1.0 if result.p_value < (1 - result.confidence_level) else 0.0)
+    except Exception as e:
+        print(f"MLflow logging failed (non-critical): {e}")
 
 def estimate_plr(
     data: PreparedData,
@@ -86,7 +130,7 @@ def estimate_plr(
 
     ci = model.confint(level=confidence_level)
 
-    return CausalEstimate(
+    result = CausalEstimate(
         estimator="PLR",
         learner=learner,
         coefficient=model.coef[0],
@@ -96,6 +140,10 @@ def estimate_plr(
         p_value=model.pval[0],
         confidence_level=confidence_level,
     )
+
+    _log_to_mlflow(result, data)
+
+    return result
 
 
 def estimate_irm(
@@ -107,15 +155,14 @@ def estimate_irm(
 
     dml_data = dml.DoubleMLData.from_arrays(x=data.X, y=data.Y, d=data.D)
     ml_l, ml_m = get_learners(learner, n_features=data.X.shape[1])
-    # IRM needs ml_g (outcome model) and ml_m (propensity)
-    ml_g = ml_l  # reuse the regressor for g
+    ml_g = ml_l
 
     model = dml.DoubleMLIRM(dml_data, ml_g=ml_g, ml_m=ml_m)
     model.fit()
 
     ci = model.confint(level=confidence_level)
 
-    return CausalEstimate(
+    result = CausalEstimate(
         estimator="IRM",
         learner=learner,
         coefficient=model.coef[0],
@@ -125,6 +172,10 @@ def estimate_irm(
         p_value=model.pval[0],
         confidence_level=confidence_level,
     )
+
+    _log_to_mlflow(result, data)
+
+    return result
 
 
 def run_estimation(

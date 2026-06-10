@@ -19,14 +19,12 @@ from skorch import NeuralNetRegressor, NeuralNetClassifier
 
 
 class RegressionNet(nn.Module):
-    """Net for outcome model (ml_l) — outputs a single value."""
-
     def __init__(self, n_features: int, hidden_size: int = 64):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(n_features, hidden_size),
             nn.ReLU(),
-            nn.BatchNorm1d(hidden_size),
+            nn.Dropout(0.1),
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, 1),
@@ -37,14 +35,12 @@ class RegressionNet(nn.Module):
 
 
 class ClassificationNet(nn.Module):
-    """Net for propensity model (ml_m) — outputs 2-class log probabilities."""
-
     def __init__(self, n_features: int, hidden_size: int = 64):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(n_features, hidden_size),
             nn.ReLU(),
-            nn.BatchNorm1d(hidden_size),
+            nn.Dropout(0.1),
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, 2),

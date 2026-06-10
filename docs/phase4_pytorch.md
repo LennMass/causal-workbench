@@ -13,4 +13,5 @@ Builds a neural net that plugs into DoubleML as an alternative nuisance learner.
 
 
 ## Resources
-- 
+- [PyTorch](https://pytorch.org/)
+- [TabPFN](https://github.com/PriorLabs/tabpfn)

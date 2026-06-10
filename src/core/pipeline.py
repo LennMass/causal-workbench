@@ -11,6 +11,8 @@ from dataclasses import dataclass
 import numpy as np
 import polars as pl
 
+from src.core.text_features import embed_text_column # optional text embedding
+
 
 @dataclass
 class PreparedData:
@@ -102,15 +104,35 @@ def run_pipeline(
     path: str | Path,
     treatment_col: str = "treatment",
     outcome_col: str = "outcome",
+    text_cols: list[str] | None = None,
+    n_components: int | None = 10,
 ) -> PreparedData:
-    """Full pipeline: load → clean → prepare."""
+    """Full pipeline: load → embed text → clean → prepare."""
     df = load_and_validate(path, treatment_col, outcome_col)
-    log_summary(df) # print summary stats for numerics
-    print(f"Nulls before cleaning: {df.null_count()}")
+
+    # Find all text-like columns (strings with many unique values)
+    string_cols = [c for c in df.columns if df[c].dtype == pl.Utf8]
+
+    if text_cols:
+        for col in text_cols:
+            if col in df.columns:
+                df = embed_text_column(df, col, n_components=n_components)
+                print(f"Embedded text column '{col}' → {n_components} components")
+        # Only drop leftover strings that are high-cardinality (free text)
+        leftover = [c for c in string_cols if c in df.columns and df[c].n_unique() > 30]
+        if leftover:
+            df = df.drop(leftover)
+            print(f"Dropped unembedded text columns: {leftover}")
+    else:
+        for col in string_cols:
+            if df[col].n_unique() > 30:
+                df = df.drop(col)
+                print(f"Dropped text column '{col}' (not embedded, more than 30 unique values.)")
+
     df = clean_data(df)
-    print(f"Nulls before cleaning: {df.null_count()}")
     data = prepare_for_doubleml(df, treatment_col, outcome_col)
     print(f"Prepared: {data.n_obs} observations, {data.n_features} features")
+    print(f"Columns: {df.columns}")
     return data
 
 
