@@ -222,12 +222,3 @@ if __name__ == "__main__":
     print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
     print(f"p-value:    {result.p_value:.6f}")
 
-    result = run_estimation(data, estimator="plr", learner="pytorch")
-
-    print(f"\n{'='*50}")
-    print(f"Estimator:  {result.estimator}")
-    print(f"Learner:    {result.learner}")
-    print(f"ATE:        {result.coefficient:.4f}")
-    print(f"Std Error:  {result.std_error:.4f}")
-    print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
-    print(f"p-value:    {result.p_value:.6f}")
