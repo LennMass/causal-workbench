@@ -28,8 +28,7 @@ class EstimatorType(str, Enum):
 class LearnerType(str, Enum):
     SKLEARN = "sklearn"
     TABPFN = "tabpfn"
-    # Phase 4 will add:
-    # PYTORCH = "pytorch"
+    PYTORCH = "pytorch"
 
 
 # ---------------------------------------------------------------------------

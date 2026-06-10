@@ -44,24 +44,27 @@ def _get_sklearn_learners() -> tuple:
 
 def _get_tabpfn_learners() -> tuple:
     """TabPFN learners — works best with n < 1000, p < 100."""
-    # TODO: Phase 1 exercise — import and configure TabPFN here.
-    #
-    # from tabpfn import TabPFNRegressor, TabPFNClassifier
-    # ml_l = TabPFNRegressor()
-    # ml_m = TabPFNClassifier()
-    # return ml_l, ml_m
-    #
-    # For now, fall back to sklearn:
-    print("⚠ TabPFN not configured yet — using sklearn as fallback")
-    return _get_sklearn_learners()
+    
+    from tabpfn import TabPFNRegressor, TabPFNClassifier
+    ml_l = TabPFNRegressor()
+    ml_m = TabPFNClassifier()
+    return ml_l, ml_m
+
+def _get_pytorch_learners(n_features: int = 10) -> tuple:
+    """PyTorch nuisance learners via skorch."""
+    from src.core.learners import get_pytorch_regressor, get_pytorch_classifier
+    ml_l = get_pytorch_regressor(n_features)
+    ml_m = get_pytorch_classifier(n_features)
+    return ml_l, ml_m
 
 
-def get_learners(name: str = "sklearn") -> tuple:
+
+def get_learners(name: str = "sklearn", n_features: int = 10) -> tuple:
     """Factory for nuisance learner pairs."""
     factories = {
         "sklearn": _get_sklearn_learners,
         "tabpfn": _get_tabpfn_learners,
-        # Phase 4 will add: "pytorch": _get_pytorch_learners
+        "pytorch": lambda: _get_pytorch_learners(n_features),
     }
     if name not in factories:
         raise ValueError(f"Unknown learner '{name}'. Choose from: {list(factories.keys())}")
@@ -76,7 +79,7 @@ def estimate_plr(
     """Partially Linear Regression: Y = D*theta + g(X) + U."""
 
     dml_data = dml.DoubleMLData.from_arrays(x=data.X, y=data.Y, d=data.D)
-    ml_l, ml_m = get_learners(learner)
+    ml_l, ml_m = get_learners(learner, n_features=data.X.shape[1])
 
     model = dml.DoubleMLPLR(dml_data, ml_l=ml_l, ml_m=ml_m)
     model.fit()
@@ -103,7 +106,7 @@ def estimate_irm(
     """Interactive Regression Model — for heterogeneous effects."""
 
     dml_data = dml.DoubleMLData.from_arrays(x=data.X, y=data.Y, d=data.D)
-    ml_l, ml_m = get_learners(learner)
+    ml_l, ml_m = get_learners(learner, n_features=data.X.shape[1])
     # IRM needs ml_g (outcome model) and ml_m (propensity)
     ml_g = ml_l  # reuse the regressor for g
 
@@ -149,6 +152,26 @@ if __name__ == "__main__":
 
     data = run_pipeline("data/sample_data.csv")
     result = run_estimation(data, estimator="plr", learner="sklearn")
+
+    print(f"\n{'='*50}")
+    print(f"Estimator:  {result.estimator}")
+    print(f"Learner:    {result.learner}")
+    print(f"ATE:        {result.coefficient:.4f}")
+    print(f"Std Error:  {result.std_error:.4f}")
+    print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
+    print(f"p-value:    {result.p_value:.6f}")
+
+    result = run_estimation(data, estimator="plr", learner="tabpfn")
+
+    print(f"\n{'='*50}")
+    print(f"Estimator:  {result.estimator}")
+    print(f"Learner:    {result.learner}")
+    print(f"ATE:        {result.coefficient:.4f}")
+    print(f"Std Error:  {result.std_error:.4f}")
+    print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
+    print(f"p-value:    {result.p_value:.6f}")
+
+    result = run_estimation(data, estimator="plr", learner="pytorch")
 
     print(f"\n{'='*50}")
     print(f"Estimator:  {result.estimator}")

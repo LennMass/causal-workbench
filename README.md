@@ -12,6 +12,7 @@ A self-hosted API for causal treatment effect estimation with DoubleML and TabPF
 - VS Code (or any other code editor) with the **Python** extension installed
 - Git
 - (Phase 6 only) Redis — via Docker or local install
+- TabPFN requires a one-time license acceptance to download model weights for local inference: [Login](https://ux.priorlabs.ai/account), [licenses](https://ux.priorlabs.ai/account/licenses).
 
 ---
 
