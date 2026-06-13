@@ -55,17 +55,18 @@ source .venv/bin/activate
 .venv\Scripts\activate
 ```
 
-### 4. Install dependencies for the current phase
+### 4. Install dependencies
 
 ```bash
-pip install -e ".[phase1]"
+pip install -e ".[all]"
 ```
 
-Replace `phase1` with whichever phase you're working on (see extras below).
+If you are interested just in parts of this project, replace `all` with whichever phase you're working on (see extras below).
 
-### 5. Run the API (Phase 3+)
+### 5. Set your LLM API key and run the API of this project
 
 ```bash
+export ANTHROPIC_API_KEY="sk-ant-api03-dein-key" # for Claude API
 uvicorn src.api.main:app --reload
 ```
 
@@ -138,33 +139,29 @@ causal-workbench/
 
 ---
 
-## Phase Overview
+## Overview
 
-### Phase 1 — Polars (data wrangling)
+### Polars (data wrangling)
 Load CSV, validate columns, handle missing values, encode
 categoricals, return clean arrays for DoubleML. See `docs/phase1_polars.md`.
 
-### Phase 2 — Pydantic (schemas & validation)
-Define `AnalysisRequest`, `CausalResult`, and `DatasetInfo` as strict typed
+### Pydantic (schemas & validation)
+`AnalysisRequest`, `CausalResult`, and `DatasetInfo` as strict typed
 models. See `docs/phase2_pydantic.md`.
 
-### Phase 3 — FastAPI (API layer)
-Wrap the pipeline in REST endpoints. Upload data, configure analysis, get
+### FastAPI (API layer)
+REST endpoints to upload data, configure analysis, get
 results. Auto-generated docs at `/docs`. See `docs/phase3_fastapi.md`.
 
-### Phase 4 — PyTorch (custom nuisance learner)
-Build a small neural net that plugs into DoubleML as `ml_l` / `ml_m`.
-Compare against TabPFN and sklearn. See `docs/phase4_pytorch.md`.
-
-### Phase 5 — Transformers (text confounders)
+### Transformers (text confounders)
 Embed text columns with sentence-transformers so they can enter the causal
 model as numeric confounders. See `docs/phase5_transformers.md`.
 
-### Phase 6 — Celery (async background jobs)
+### Celery (async background jobs)
 Move heavy computation to background workers. Return job IDs, poll for
 results. See `docs/phase6_celery.md`.
 
-### Phase 7 — Pydantic AI (LLM explanation agent)
+### Pydantic AI (LLM explanation agent)
 An agent that interprets your causal results in plain language with
 structured, validated output. See `docs/phase7_pydantic_ai.md`.
 
@@ -173,14 +170,76 @@ structured, validated output. See `docs/phase7_pydantic_ai.md`.
 ## Sample Workflow (after Phase 3)
 
 ```bash
-# Start the API
+
+# Activate venv and install dependencies
+source .venv/bin/activate
+pip install -e ".[all]"
+
+# Export your API key and Start the API
+export ANTHROPIC_API_KEY="sk-ant-api03-dein-key"
 uvicorn src.api.main:app --reload
 
-# Upload data and run analysis (from another terminal)
-curl -X POST http://localhost:8000/analyze \
+# From another terminal: Upload data and run analysis
+curl -X POST http://localhost:8000/explain \
   -F "file=@data/sample_data.csv" \
   -F 'config={"treatment_col":"treatment","outcome_col":"outcome","estimator":"plr","learner":"tabpfn"}'
 ```
+
+---
+
+## Example Output
+
+### Causal Estimation (`POST /analyze`)
+
+Upload `sample_data.csv` (5,000 observations, job training → monthly income, true ATE = 350):
+
+```json
+{
+  "estimator": "PLR",
+  "learner": "sklearn",
+  "coefficient": 349.87,
+  "std_error": 44.12,
+  "ci_lower": 263.39,
+  "ci_upper": 436.35,
+  "p_value": 0.000001,
+  "confidence_level": 0.95,
+  "significant": true
+}
+```
+
+### Learner Comparison (`POST /compare`)
+
+| Learner | ATE | Std Error | 95% CI | p-value |
+|---------|-----|-----------|--------|---------|
+| sklearn | 349.87 | 44.12 | [263.39, 436.35] | 0.000 |
+| TabPFN | 352.14 | 41.58 | [270.64, 433.64] | 0.000 |
+
+Both learners recover the true treatment effect (~350), with TabPFN
+showing the tightest confidence interval.
+
+### LLM Interpretation (`POST /explain`)
+
+The Pydantic AI agent produces structured, validated output:
+
+```json
+{
+  "summary": "Participating in job training increases monthly income by ~$350...",
+  "significance_assessment": "Statistically significant (p < 0.001)...",
+  "effect_size_context": "Represents a ~10-14% income increase...",
+  "threats_to_validity": [
+    "Unobserved confounders (motivation, social networks)",
+    "Selection bias in training participation",
+    "..."
+  ],
+  "suggested_robustness_checks": [
+    "Sensitivity analysis using E-values",
+    "Placebo test with pre-treatment outcomes",
+    "..."
+  ]
+}
+```
+
+
 
 ---
 
