@@ -7,10 +7,13 @@ get results. Auto-generated interactive docs at /docs.
 Run with: uvicorn src.api.main:app --reload
 
 ENDPOINTS:
-  GET  /                → health check
-  GET  /estimators      → list available estimators and learners
-  POST /analyze         → upload CSV + config, get causal result
-  POST /compare         → run all learners, compare results
+  GET  /                  health check
+  GET  /estimators        list available estimators and learners
+  POST /analyze           upload CSV + config, get causal result
+  POST /compare           run all learners, compare results
+  POST /analzye/asny      submit analysis as a background job. Returns job ID immediately.
+  GET  /results/{job_id}  Poll for job results.
+  POST /explain           Run causal analysis AND get an LLM explanation.
 """
 
 import io
@@ -35,6 +38,8 @@ from src.core.text_features import embed_text_column
 # celery
 from src.api.tasks import run_analysis_task
 from src.core.schemas import JobStatus, JobResponse
+# llm explainer
+from src.core.schemas import CausalInterpretation, ExplainedResult
 
 
 app = FastAPI(
@@ -287,8 +292,67 @@ def get_results(job_id: str):
             status=JobStatus.FAILED,
             error=str(task.info),
         )
-        
+
 # ---------------------------------------------------------------------------
-# Phase 7: will add this explanation endpoint
+# explanation endpoint for CausalResult+LLM interpretation
 # ---------------------------------------------------------------------------
-# @app.post("/explain")          → returns CausalResult + LLM interpretation
+
+
+@app.post("/explain", response_model=ExplainedResult)
+async def explain(
+    file: UploadFile = File(...),
+    treatment_col: str = "treatment",
+    outcome_col: str = "outcome",
+    text_cols: str | None = None,
+    estimator: EstimatorType = EstimatorType.PLR,
+    learner: LearnerType = LearnerType.SKLEARN,
+    confidence_level: float = 0.95,
+):
+    from src.agents.explainer import explain_result  # lazy import
+
+    """Run causal analysis AND get an LLM explanation."""
+
+    path = await _save_upload(file)
+
+    try:
+        text_col_list = [c.strip() for c in text_cols.split(",")] if text_cols else None
+        data = run_pipeline(path, treatment_col, outcome_col, text_cols=text_col_list)
+        est = run_estimation(
+            data,
+            estimator=estimator.value,
+            learner=learner.value,
+            confidence_level=confidence_level,
+        )
+
+        causal_result = CausalResult(
+            estimator=est.estimator,
+            learner=est.learner,
+            coefficient=est.coefficient,
+            std_error=est.std_error,
+            ci_lower=est.ci_lower,
+            ci_upper=est.ci_upper,
+            p_value=est.p_value,
+            confidence_level=est.confidence_level,
+            significant=est.p_value < (1 - confidence_level),
+        )
+
+        interpretation = await explain_result(
+            estimator=est.estimator,
+            learner=est.learner,
+            coefficient=est.coefficient,
+            std_error=est.std_error,
+            ci_lower=est.ci_lower,
+            ci_upper=est.ci_upper,
+            p_value=est.p_value,
+            confidence_level=est.confidence_level,
+            treatment_col=treatment_col,
+            outcome_col=outcome_col,
+            n_obs=data.n_obs,
+            n_features=data.n_features,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    finally:
+        path.unlink(missing_ok=True)
+
+    return ExplainedResult(result=causal_result, interpretation=interpretation)

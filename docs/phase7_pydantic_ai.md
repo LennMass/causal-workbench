@@ -1,10 +1,11 @@
-# Phase 7 — LLM Explanation Agent with Pydantic AI
+# LLM Explanation Agent with Pydantic AI
 
-## Goal
-Build an agent that interprets causal results in plain language with
+An agent that interprets causal results in plain language with
 structured, validated output.
 
-## What to learn
+The LLM doesn't *do* the statistics — DoubleML and/or TabPFN do. The LLM *interprets*
+the numbers for a non-technical audience.
+
 - Pydantic AI `Agent` definition with `result_type`
 - System prompts for domain expertise
 - Structured output: LLM fills a Pydantic model, not free text
@@ -17,20 +18,11 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 export OPENAI_API_KEY="sk-..."
 ```
 
-## Files to work on
-- `src/agents/explainer.py` — uncomment and implement
-- `src/core/schemas.py` — uncomment `CausalInterpretation`
-- `src/api/main.py` — add `POST /explain` endpoint
+## Files 
+- `src/agents/explainer.py` 
+- `src/core/schemas.py` 
+- `src/api/main.py` 
 
-## Exercises
-1. Uncomment the agent in `explainer.py`
-2. Test it standalone: pass in a `CausalResult` and print the interpretation
-3. Add `POST /explain` to the API: runs analysis + explanation in one call
-4. Try the "estimator chooser": describe a research question in natural language,
-   let the agent decide PLR vs IRM based on the description
-5. Add a `threats_to_validity` field and see if the LLM catches real issues
+# Resource 
+[Pydantic AI](https://pydantic.dev/docs/ai/overview/)
 
-## Key insight
-The LLM doesn't *do* the statistics — DoubleML does. The LLM *interprets*
-the numbers for a non-technical audience. This separation is important:
-never let the LLM make up statistics.

@@ -1,14 +1,13 @@
 """
-Phase 1 — Causal estimators using DoubleML.
+Causal estimators using DoubleML.
 
 Wraps DoubleML's PLR and IRM models with pluggable ML backends:
   - sklearn (Random Forest) — fast baseline
   - TabPFN — zero-shot, great for small data
 
-LEARN:
-  - DoubleML data backend (DoubleMLData)
-  - Partially Linear Regression (PLR) vs Interactive Regression (IRM)
-  - Swapping nuisance learners and comparing results
+- DoubleML data backend (DoubleMLData)
+- Partially Linear Regression (PLR) vs Interactive Regression (IRM)
+- Swapping nuisance learners and comparing results
 """
 
 from dataclasses import dataclass

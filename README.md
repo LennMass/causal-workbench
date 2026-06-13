@@ -1,6 +1,7 @@
 # Causal Inference Workbench
 
-A self-hosted API for causal treatment effect estimation with DoubleML and TabPFN at the core.
+A self-hosted API for causal treatment effect estimation with DoubleML and TabPFN at the core. 
+An 
 
 
 
@@ -11,8 +12,9 @@ A self-hosted API for causal treatment effect estimation with DoubleML and TabPF
 - Python 3.10+ (3.11 or 3.12 recommended)
 - VS Code (or any other code editor) with the **Python** extension installed
 - Git
-- (Phase 6 only) Redis — via Docker or local install
+- Redis — via Docker or local install
 - TabPFN requires a one-time license acceptance to download model weights for local inference: [Login](https://ux.priorlabs.ai/account), [License]( https://ux.priorlabs.ai/account/licenses).
+- LLM API Key for automatic LLM results explainer (i.e. via [Claude Platform](https://platform.claude.com/dashboard))
 
 
 ---

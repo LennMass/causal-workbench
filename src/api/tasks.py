@@ -1,5 +1,5 @@
 """
-Phase 6 — Celery background tasks.
+Celery background tasks.
 
 Move heavy computation off the request thread so the API responds instantly
 with a job ID, and the user polls for results.
@@ -11,14 +11,15 @@ with a job ID, and the user polls for results.
 - Retrieving results with AsyncResult
 - How to run: celery -A src.api.tasks worker --loglevel=info
 
-
-
-TODO (your exercises):
-  1. Uncomment and implement the task below
-  2. Add POST /analyze/async and GET /results/{job_id} to main.py
-  3. Test: POST to /analyze/async, get job_id, poll /results/{job_id}
-  4. Try submitting multiple jobs and watching them process in parallel
 """
+
+import os
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+import torch
+torch.set_default_device("cpu")
+
 
 from celery import Celery
 

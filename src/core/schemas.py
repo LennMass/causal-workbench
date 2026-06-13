@@ -8,7 +8,6 @@ requests, responses, and internal data structures.
 - Field validators and constraints
 - Enum types for controlled vocabularies
 - model_dump() / model_validate() for serialization
-- How FastAPI uses these automatically
 """
 
 from enum import Enum
@@ -122,13 +121,31 @@ class JobResponse(BaseModel):
     error: str | None = None
 
 # ---------------------------------------------------------------------------
-# Phase 7 additions (LLM agent)
+# LLM agent
 # ---------------------------------------------------------------------------
 
-# TODO: Add these in Phase 7
-#
-# class CausalInterpretation(BaseModel):
-#     summary: str = Field(description="Plain-language summary")
-#     significance_assessment: str
-#     threats_to_validity: list[str]
-#     suggested_robustness_checks: list[str]
+class CausalInterpretation(BaseModel):
+    """Structured LLM output for causal result explanation."""
+
+    summary: str = Field(
+        description="2-3 sentence plain-language summary of the finding, understandable by a non-statistician"
+    )
+    significance_assessment: str = Field(
+        description="Is this statistically significant? Is it practically meaningful? Explain the difference."
+    )
+    effect_size_context: str = Field(
+        description="How large is this effect? Provide intuitive context or analogies."
+    )
+    threats_to_validity: list[str] = Field(
+        description="List potential issues: unobserved confounders, selection bias, model misspecification, etc."
+    )
+    suggested_robustness_checks: list[str] = Field(
+        description="Concrete next steps: sensitivity analysis, alternative estimators, placebo tests, etc."
+    )
+
+
+class ExplainedResult(BaseModel):
+    """Combined statistical result and LLM interpretation."""
+
+    result: CausalResult
+    interpretation: CausalInterpretation

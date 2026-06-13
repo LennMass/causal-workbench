@@ -11,9 +11,7 @@ then concatenate with structured features for DoubleML.
 
 EXAMPLE DATASET IDEA:
   Estimate effect of a discount (treatment) on purchase amount (outcome),
-  with product_description as a text confounder. Without encoding the text,
-  you have omitted variable bias if description predicts both treatment
-  assignment and outcome.
+  with product_description as a text confounder.
 """
 
 from sentence_transformers import SentenceTransformer

@@ -10,7 +10,6 @@ so it can be plugged into DoubleML as ml_l (outcome model) or ml_m
 - skorch as a sklearn-compatible wrapper for PyTorch
 - Comparing NN nuisance learners vs RandomForest vs TabPFN
 
-
 """
 
 import torch
