@@ -30,7 +30,11 @@ from src.core.schemas import (
 )
 from src.core.pipeline import run_pipeline, clean_data, prepare_for_doubleml
 from src.core.estimators import run_estimation
+# transformers
 from src.core.text_features import embed_text_column
+# celery
+from src.api.tasks import run_analysis_task
+from src.core.schemas import JobStatus, JobResponse
 
 
 app = FastAPI(
@@ -221,11 +225,69 @@ async def compare_learners(
 
 
 # ---------------------------------------------------------------------------
-# Phase 6: will add these async endpoints
+# Async endpoints for jobid and status+result
 # ---------------------------------------------------------------------------
-# @app.post("/analyze/async")    → returns job_id
-# @app.get("/results/{job_id}")  → returns status + result
+@app.post("/analyze/async", response_model=JobResponse)
+async def analyze_async(
+    file: UploadFile = File(...),
+    treatment_col: str = "treatment",
+    outcome_col: str = "outcome",
+    text_cols: str | None = None,
+    estimator: EstimatorType = EstimatorType.PLR,
+    learner: LearnerType = LearnerType.SKLEARN,
+    confidence_level: float = 0.95,
+):
+    """Submit analysis as a background job. Returns job ID immediately."""
+    import tempfile
 
+    content = await file.read()
+    tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False, dir="/tmp")
+    tmp.write(content)
+    tmp.flush()
+    tmp.close()
+
+    config = {
+        "treatment_col": treatment_col,
+        "outcome_col": outcome_col,
+        "text_cols": text_cols,
+        "estimator": estimator.value,
+        "learner": learner.value,
+        "confidence_level": confidence_level,
+    }
+
+    task = run_analysis_task.delay(tmp.name, config)
+
+    return JobResponse(job_id=task.id, status=JobStatus.PENDING)
+
+
+@app.get("/results/{job_id}", response_model=JobResponse)
+def get_results(job_id: str):
+    """Poll for job results."""
+    from celery.result import AsyncResult
+
+    task = AsyncResult(job_id, app=run_analysis_task.app)
+
+    if task.state == "PENDING":
+        return JobResponse(job_id=job_id, status=JobStatus.PENDING)
+    elif task.state in ("STARTED", "RUNNING"):
+        return JobResponse(job_id=job_id, status=JobStatus.RUNNING)
+    elif task.state == "SUCCESS":
+        r = task.result
+        return JobResponse(
+            job_id=job_id,
+            status=JobStatus.COMPLETED,
+            result=CausalResult(
+                **r,
+                significant=r["p_value"] < (1 - r["confidence_level"]),
+            ),
+        )
+    else:
+        return JobResponse(
+            job_id=job_id,
+            status=JobStatus.FAILED,
+            error=str(task.info),
+        )
+        
 # ---------------------------------------------------------------------------
 # Phase 7: will add this explanation endpoint
 # ---------------------------------------------------------------------------

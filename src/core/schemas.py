@@ -105,23 +105,21 @@ class ComparisonResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Phase 6 additions (async jobs)
+# Async jobs
 # ---------------------------------------------------------------------------
 
-# TODO: Add these in Phase 6
-#
-# class JobStatus(str, Enum):
-#     PENDING = "pending"
-#     RUNNING = "running"
-#     COMPLETED = "completed"
-#     FAILED = "failed"
-#
-# class JobResponse(BaseModel):
-#     job_id: str
-#     status: JobStatus
-#     result: CausalResult | None = None
-#     error: str | None = None
+class JobStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
+
+class JobResponse(BaseModel):
+    job_id: str
+    status: JobStatus
+    result: CausalResult | None = None
+    error: str | None = None
 
 # ---------------------------------------------------------------------------
 # Phase 7 additions (LLM agent)
