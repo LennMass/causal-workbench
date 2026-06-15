@@ -87,7 +87,7 @@ Main dependencies installed with `pip install -e ".[all]"`:
 - Polars, DoubleML, TabPFN, scikit-learn
 - Pydantic 
 - PyTorch, skorch 
-- FastAPI, Uvicorn
+- FastAPI, Uvicorn, MLflow
 - sentence-transformers
 - Celery, Redis
 - pydantic-ai, anthropic
@@ -185,6 +185,8 @@ curl -X POST http://localhost:8000/explain \
 ---
 
 ## Example Output
+
+The example partially relies on the docs for [CML with TabPFN](https://docs.doubleml.org/stable/examples/learners/py_tabpfn.html).
 
 ### Causal Estimation (`POST /analyze`)
 

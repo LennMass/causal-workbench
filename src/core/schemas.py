@@ -27,8 +27,7 @@ class EstimatorType(str, Enum):
 class LearnerType(str, Enum):
     SKLEARN = "sklearn"
     TABPFN = "tabpfn"
-    #PYTORCH = "pytorch" # currently not implemented
-
+    XGBOOST = "xgboost"
 
 # ---------------------------------------------------------------------------
 # Request models

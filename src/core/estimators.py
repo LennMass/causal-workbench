@@ -62,19 +62,26 @@ def _get_sklearn_learners() -> tuple:
     return ml_l, ml_m
 
 
+_tabpfn_cache = {}
+
 def _get_tabpfn_learners() -> tuple:
     """TabPFN learners — works best with n < 1000, p < 100."""
-    
-    from tabpfn import TabPFNRegressor, TabPFNClassifier
-    ml_l = TabPFNRegressor()
-    ml_m = TabPFNClassifier()
-    return ml_l, ml_m
 
-def _get_pytorch_learners(n_features: int = 10) -> tuple:
-    """PyTorch nuisance learners via skorch."""
-    from src.core.learners import get_pytorch_regressor, get_pytorch_classifier
-    ml_l = get_pytorch_regressor(n_features)
-    ml_m = get_pytorch_classifier(n_features)
+    """TabPFN learners — cached to avoid reloading weights."""
+    if "ml_l" not in _tabpfn_cache:
+        from tabpfn import TabPFNRegressor, TabPFNClassifier
+        _tabpfn_cache["ml_l"] = TabPFNRegressor()
+        _tabpfn_cache["ml_m"] = TabPFNClassifier()
+        print("TabPFN models loaded (cached for future calls)")
+    
+    from sklearn.base import clone
+    return clone(_tabpfn_cache["ml_l"]), clone(_tabpfn_cache["ml_m"])
+
+
+def _get_xgboost_learners() -> tuple:
+    from src.core.learners import get_xgboost_regressor, get_xgboost_classifier
+    ml_l = get_xgboost_regressor()
+    ml_m = get_xgboost_classifier()
     return ml_l, ml_m
 
 
@@ -84,7 +91,7 @@ def get_learners(name: str = "sklearn", n_features: int = 10) -> tuple:
     factories = {
         "sklearn": _get_sklearn_learners,
         "tabpfn": _get_tabpfn_learners,
-        "pytorch": lambda: _get_pytorch_learners(n_features),
+        "xgboost": lambda: _get_xgboost_learners(),
     }
     if name not in factories:
         raise ValueError(f"Unknown learner '{name}'. Choose from: {list(factories.keys())}")
@@ -212,6 +219,16 @@ if __name__ == "__main__":
     print(f"p-value:    {result.p_value:.6f}")
 
     result = run_estimation(data, estimator="plr", learner="tabpfn")
+
+    print(f"\n{'='*50}")
+    print(f"Estimator:  {result.estimator}")
+    print(f"Learner:    {result.learner}")
+    print(f"ATE:        {result.coefficient:.4f}")
+    print(f"Std Error:  {result.std_error:.4f}")
+    print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
+    print(f"p-value:    {result.p_value:.6f}")
+
+    result = run_estimation(data, estimator="plr", learner="xgboost")
 
     print(f"\n{'='*50}")
     print(f"Estimator:  {result.estimator}")
