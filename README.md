@@ -206,6 +206,8 @@ Upload `sample_data.csv` (5,000 observations, job training → monthly income, t
 
 ### Learner Comparison (`POST /compare`)
 
+Comparison of ATE estimates for DoubleML with different nuisance learners.
+
 | Learner | ATE | Std Error | 95% CI | p-value |
 |---------|-----|-----------|--------|---------|
 | sklearn | 356.01 | 8.55 | [339.24, 372.77] | 0.000 |
