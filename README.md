@@ -1,4 +1,4 @@
-# Causal Inference Workbench
+# Causal Inference Workbench: Automated ATE estimation with integrated LLM explainer
 
 A self-hosted API for automated average treatment effect (ATE) estimation. We use DoubleML at the core for effect estimation and an integrated LLM explainer to interpret, summarize and assess results while pointing out possible threats to estimation validity. 
 
