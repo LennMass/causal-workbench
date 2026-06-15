@@ -190,7 +190,7 @@ The example partially relies on the docs for [CML with TabPFN](https://docs.doub
 
 ### Causal Estimation (`POST /analyze`)
 
-Upload `sample_data.csv` (5,000 observations, job training → monthly income, true ATE = 350):
+Upload `sample_data.csv` (2,000 observations, job training → monthly income, true ATE = 350):
 
 ```json
 {

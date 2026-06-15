@@ -65,5 +65,5 @@ def test_dataset_info():
         )
     assert response.status_code == 200
     data = response.json()
-    assert data["n_rows"] == 5000
-    assert data["n_treated"] + data["n_control"] == 5000
+    assert data["n_rows"] == 2000
+    assert data["n_treated"] + data["n_control"] == 2000

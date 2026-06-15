@@ -14,7 +14,7 @@ SAMPLE_DATA = Path("data/sample_data.csv")
 def test_load_and_validate():
     df = load_and_validate(SAMPLE_DATA, "treatment", "outcome")
     assert isinstance(df, pl.DataFrame)
-    assert df.shape[0] == 5000
+    assert df.shape[0] == 2000
     assert "treatment" in df.columns
     assert "outcome" in df.columns
 
@@ -39,16 +39,16 @@ def test_prepare_for_doubleml_shapes():
     df = clean_data(df)
     data = prepare_for_doubleml(df, "treatment", "outcome")
 
-    assert data.X.shape[0] == 5000
-    assert data.D.shape == (5000,)
-    assert data.Y.shape == (5000,)
-    assert data.n_obs == 5000
+    assert data.X.shape[0] == 2000
+    assert data.D.shape == (2000,)
+    assert data.Y.shape == (2000,)
+    assert data.n_obs == 2000
     assert data.n_features == data.X.shape[1]
 
 
 def test_full_pipeline():
     data = run_pipeline(SAMPLE_DATA)
-    assert data.n_obs == 5000
+    assert data.n_obs == 2000
     assert isinstance(data.X, np.ndarray)
     assert isinstance(data.D, np.ndarray)
     assert isinstance(data.Y, np.ndarray)
