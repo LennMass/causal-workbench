@@ -196,10 +196,10 @@ Upload `sample_data.csv` (2,000 observations, job training → monthly income, t
 {
   "estimator": "PLR",
   "learner": "sklearn",
-  "coefficient": 356.01,
-  "std_error": 8.55,
-  "ci_lower": 339.24,
-  "ci_upper": 372.77,
+  "coefficient": 362.68,
+  "std_error": 10.23,
+  "ci_lower": 342.62,
+  "ci_upper": 382.74,
   "p_value": 0.000001,
   "confidence_level": 0.95,
   "significant": true
@@ -212,11 +212,12 @@ Comparison of ATE estimates for DoubleML with different nuisance learners.
 
 | Learner | ATE | Std Error | 95% CI | p-value |
 |---------|-----|-----------|--------|---------|
-| sklearn | 356.01 | 8.55 | [339.24, 372.77] | 0.000 |
-| TabPFN | 353.78 | 6.39 | [341.246, 366.32] | 0.000 |
+| sklearn | 369.2823 | 16.01 | [337.89, 400.67] | 0.000 |
+| xgboost | 364.39 | 12.39 | [340.10, 388.68] | 0.000 |
+| TabPFN | 362.68 | 10.23 | [342.62, 382.74] | 0.000 |
 
-Both learners recover the true treatment effect (~350), with TabPFN
-showing the tightest confidence interval.
+All learners recover the true treatment effect (~350), with TabPFN as a nuisance learner
+showing the tightest confidence interval and minimum bias.
 
 ### LLM Interpretation (`POST /explain`)
 
@@ -225,39 +226,40 @@ The Pydantic AI agent produces structured, validated output:
 ```json
 {"result":
   {
-    "estimator":"PLR",
-    "learner":"tabpfn",
-    "coefficient":353.78401649137635,
-    "std_error":6.397033345551332,
-    "ci_lower":341.24606152619396,
-    "ci_upper":366.32197145655874,
-    "p_value":0.0,
-    "confidence_level":0.95,
-    "significant":true
+    "estimator": "PLR",
+    "learner": "sklearn",
+    "coefficient": 362.68,
+    "std_error": 10.23,
+    "ci_lower": 342.62,
+    "ci_upper": 382.74,
+    "p_value": 0.000001,
+    "confidence_level": 0.95,
+    "significant": true
   },
 "interpretation":
   {
     "summary":
-    "Using a Partially Linear Regression (PLR) model with a TabPFN machine learning learner to control for 18 confounders across 5,000 observations, the analysis estimates that receiving the treatment causes an average increase of approximately 353.78 units in the outcome. This effect is estimated with high precision, and we can be very confident it is not due to random chance. However, this causal interpretation is only valid if all important confounders have been measured and included in the model.",
+    "Using a Partially Linear Regression (PLR) model with a TabPFN machine learning learner to control for 18 confounders across 2,000 observations, the analysis estimates that receiving the treatment causes an average increase of approximately 362.68 units in the outcome. This effect is estimated with high precision, and we can be very confident it is not due to random chance. However, this causal interpretation is only valid if all important confounders have been measured and included in the model.",
 
     "significance_assessment":
-    "The result is statistically highly significant — the p-value is essentially zero, and the 95% confidence interval (341.25 to 366.32) is narrow and entirely positive, meaning there is virtually no chance this effect is a statistical fluke given the model assumptions. Practically, whether a ~354-unit increase in the outcome is meaningful depends entirely on the real-world scale of the outcome variable (e.g., dollars, test scores, health units). Statistical significance does NOT automatically imply practical importance — but here, the narrow confidence interval also suggests the estimate is precise enough to make business or policy decisions with reasonable confidence, pending subject-matter judgment on what a 354-unit change means in context.",
+    "The result is statistically highly significant — the p-value is essentially zero, and the 95% confidence interval (342.62 to 382.74) is narrow and entirely positive, meaning there is virtually no chance this effect is a statistical fluke given the model assumptions. Practically, whether a ~362-unit increase in the outcome is meaningful depends entirely on the real-world scale of the outcome variable (e.g., dollars, test scores, health units). Statistical significance does NOT automatically imply practical importance — but here, the narrow confidence interval also suggests the estimate is precise enough to make business or policy decisions with reasonable confidence, pending subject-matter judgment on what a 362-unit change means in context.",
 
     "effect_size_context":
-    "Without knowing the units or natural scale of the outcome variable, it is difficult to benchmark this effect in isolation. To put it in context, consider: if the outcome is measured in dollars (e.g., revenue), this would be a $353.78 average lift per treated unit. If the outcome has a known mean or standard deviation, computing the effect as a percentage change or in standard deviation units (Cohen's d) would clarify whether this is a small, medium, or large effect. The standard error of ~6.40 is less than 2% of the point estimate (353.78), indicating a very tight and well-identified estimate — roughly a ±1.8% margin of error around the ATE.",
+    "Without knowing the units or natural scale of the outcome variable, it is difficult to benchmark this effect in isolation. To put it in context, consider: if the outcome is measured in dollars (e.g., revenue), this would be a $362.68 average lift per treated unit. If the outcome has a known mean or standard deviation, computing the effect as a percentage change or in standard deviation units (Cohen's d) would clarify whether this is a small, medium, or large effect. The standard error of ~10.23 is less than 3% of the point estimate (362.68), indicating a very tight and well-identified estimate.",
 
     "threats_to_validity":
     [
-    "Unobserved confounders (key assumption violation): The PLR estimator assumes all variables that jointly influence both treatment assignment and the outcome have been measured and included as the 18 features. If any important confounder is missing (e.g., user motivation, socioeconomic status, hidden selection criteria), the ATE estimate will be biased — potentially severely.","Selection bias in treatment assignment: If units self-selected into treatment (rather than being randomly assigned), and the reasons for selection are not fully captured in the 18 features, the estimate may reflect selection effects rather than a true causal effect.",
+    "Unobserved confounders (key assumption violation): The PLR estimator assumes all variables that jointly influence both treatment assignment and the outcome have been measured and included as the 18 features. If any important confounder is missing (e.g., user motivation, socioeconomic status, hidden selection criteria), the ATE estimate will be biased — potentially severely.",
+"Selection bias in treatment assignment: If units self-selected into treatment (rather than being randomly assigned), and the reasons for selection are not fully captured in the 18 features, the estimate may reflect selection effects rather than a true causal effect.",
     "Model misspecification in nuisance estimation: Although TabPFN is a powerful ML learner, it may not perfectly model the relationship between confounders and treatment/outcome, especially if there are complex interactions or out-of-distribution patterns in the 18 features. Errors in nuisance estimation can leak bias into the ATE.",
     "Overlap/common support violation: If certain covariate profiles exist only in the treated or untreated group (lack of overlap), the PLR estimator may extrapolate into regions without empirical support, leading to unreliable estimates.","SUTVA (Stable Unit Treatment Value Assumption): The estimate assumes no interference between units (i.e., one unit's treatment does not affect another's outcome) and that there is only one version of the treatment. Violations — common in social or networked settings — would invalidate the causal interpretation.",
-    "External validity: The ATE of ~353.78 applies to this specific sample of 5,000 observations. Whether this effect generalizes to different populations, time periods, or contexts is not guaranteed."
+    "External validity: The ATE of ~362.68 applies to this specific sample of 2,000 observations. Whether this effect generalizes to different populations, time periods, or contexts is not guaranteed."
     ],
 
     "suggested_robustness_checks":
     [
     "Try alternative ML learners for nuisance parameters (e.g., XGBoost, LightGBM, Random Forest, Lasso) and compare ATE estimates — large discrepancies would signal sensitivity to nuisance model choice.",
-    "Run a placebo/falsification test: randomly permute the treatment variable and re-estimate the ATE. It should be close to zero; a non-zero placebo effect suggests model or data issues.","Conduct a sensitivity analysis for unobserved confounding (e.g., Rosenbaum bounds or the E-value framework) to quantify how strong an unobserved confounder would need to be to explain away the estimated effect of 353.78.","Estimate the Average Treatment Effect on the Treated (ATT) and compare it to the ATE — a large difference may indicate heterogeneity or overlap problems between treated and control groups.",
+    "Run a placebo/falsification test: randomly permute the treatment variable and re-estimate the ATE. It should be close to zero; a non-zero placebo effect suggests model or data issues.","Conduct a sensitivity analysis for unobserved confounding (e.g., Rosenbaum bounds or the E-value framework) to quantify how strong an unobserved confounder would need to be to explain away the estimated effect of 362.68.","Estimate the Average Treatment Effect on the Treated (ATT) and compare it to the ATE — a large difference may indicate heterogeneity or overlap problems between treated and control groups.",
     "Check overlap/propensity score distributions: plot the estimated propensity scores for treated vs. untreated units to verify common support. Trim or reweight observations in low-overlap regions and re-estimate.","Test for Heterogeneous Treatment Effects (HTE) using a CATE estimator (e.g., Causal Forest or X-Learner) to check whether the ATE masks important subgroup variation across the 18 features.",
     "Cross-fit with different random splits (the PLR uses cross-fitting to avoid overfitting) and verify that ATE estimates are stable across folds and different random seeds.","If panel or time-series data is available, consider a Difference-in-Differences (DiD) or event study design as an alternative identification strategy to cross-validate this result."
     ]
