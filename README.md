@@ -1,7 +1,7 @@
 # Causal Inference Workbench
 
-A self-hosted API for causal treatment effect estimation with DoubleML and TabPFN at the core. 
-An 
+A self-hosted API for automated average treatment effect (ATE) estimation. We use DoubleML at the core for effect estimation and an integrated LLM explainer to interpret, summarize and assess results while pointing out possible threats to estimation validity. 
+
 
 
 
