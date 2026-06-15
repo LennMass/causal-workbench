@@ -12,7 +12,7 @@ A self-hosted API for automated average treatment effect (ATE) estimation. We us
 - Python 3.10+ (3.11 or 3.12 recommended)
 - VS Code (or any other code editor) with the **Python** extension installed
 - Git
-- Redis — via Docker or local install
+- [Redis](https://redis.io/) — via Docker or local install
 - TabPFN requires a one-time license acceptance to download model weights for local inference: [Login](https://ux.priorlabs.ai/account), [License]( https://ux.priorlabs.ai/account/licenses).
 - LLM API Key for automatic LLM results explainer (i.e. via [Claude Platform](https://platform.claude.com/dashboard))
 
@@ -61,7 +61,7 @@ source .venv/bin/activate
 pip install -e ".[all]"
 ```
 
-If you are interested just in parts of this project, replace `all` with whichever phase you're working on (see extras below).
+If you are interested just in parts of this project, replace `all` with whichever sub-phase you're working on (see `pyproject.toml` fur further information.).
 
 ### 5. Set your LLM API key and run the API of this project
 
@@ -80,20 +80,17 @@ pytest tests/ -v
 
 ---
 
-## Install Extras by Phase
+## Main dependencies
 
-Each phase adds new dependencies. Install only what you need:
+Main dependencies installed with `pip install -e ".[all]"`: 
 
-| Command | What it adds |
-|---|---|
-| `pip install -e ".[phase1]"` | Polars, DoubleML, TabPFN, scikit-learn |
-| `pip install -e ".[phase2]"` | + Pydantic (already included, but explicit) |
-| `pip install -e ".[phase3]"` | + FastAPI, Uvicorn |
-| `pip install -e ".[phase4]"` | + PyTorch, skorch |
-| `pip install -e ".[phase5]"` | + sentence-transformers |
-| `pip install -e ".[phase6]"` | + Celery, Redis |
-| `pip install -e ".[phase7]"` | + pydantic-ai, anthropic |
-| `pip install -e ".[all]"` | Everything |
+- Polars, DoubleML, TabPFN, scikit-learn
+- Pydantic 
+- PyTorch, skorch 
+- FastAPI, Uvicorn
+- sentence-transformers
+- Celery, Redis
+- pydantic-ai, anthropic
 
 ---
 
