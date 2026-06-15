@@ -63,7 +63,7 @@ pip install -e ".[all]"
 
 If you are interested just in parts of this project, replace `all` with whichever sub-phase you're working on (see `pyproject.toml` fur further information.).
 
-### 5. Set your LLM API key and run the API of this project
+### 5. Set your LLM API key and run project locally
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-api03-your-key" # for Claude API
@@ -194,10 +194,10 @@ Upload `sample_data.csv` (5,000 observations, job training → monthly income, t
 {
   "estimator": "PLR",
   "learner": "sklearn",
-  "coefficient": 349.87,
-  "std_error": 44.12,
-  "ci_lower": 263.39,
-  "ci_upper": 436.35,
+  "coefficient": 356.01,
+  "std_error": 8.55,
+  "ci_lower": 339.24,
+  "ci_upper": 372.77,
   "p_value": 0.000001,
   "confidence_level": 0.95,
   "significant": true
