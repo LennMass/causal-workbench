@@ -66,7 +66,7 @@ If you are interested just in parts of this project, replace `all` with whicheve
 ### 5. Set your LLM API key and run the API of this project
 
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-api03-dein-key" # for Claude API
+export ANTHROPIC_API_KEY="sk-ant-api03-your-key" # for Claude API
 uvicorn src.api.main:app --reload
 ```
 
