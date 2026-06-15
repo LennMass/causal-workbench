@@ -10,6 +10,11 @@ Wraps DoubleML's PLR and IRM models with pluggable ML backends:
 - Swapping nuisance learners and comparing results
 """
 
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["OMP_NUM_THREADS"] = "1"
+
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -208,33 +213,16 @@ if __name__ == "__main__":
     from src.core.pipeline import run_pipeline
 
     data = run_pipeline("data/sample_data.csv")
-    result = run_estimation(data, estimator="plr", learner="sklearn")
 
-    print(f"\n{'='*50}")
-    print(f"Estimator:  {result.estimator}")
-    print(f"Learner:    {result.learner}")
-    print(f"ATE:        {result.coefficient:.4f}")
-    print(f"Std Error:  {result.std_error:.4f}")
-    print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
-    print(f"p-value:    {result.p_value:.6f}")
-
-    result = run_estimation(data, estimator="plr", learner="tabpfn")
-
-    print(f"\n{'='*50}")
-    print(f"Estimator:  {result.estimator}")
-    print(f"Learner:    {result.learner}")
-    print(f"ATE:        {result.coefficient:.4f}")
-    print(f"Std Error:  {result.std_error:.4f}")
-    print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
-    print(f"p-value:    {result.p_value:.6f}")
-
-    result = run_estimation(data, estimator="plr", learner="xgboost")
-
-    print(f"\n{'='*50}")
-    print(f"Estimator:  {result.estimator}")
-    print(f"Learner:    {result.learner}")
-    print(f"ATE:        {result.coefficient:.4f}")
-    print(f"Std Error:  {result.std_error:.4f}")
-    print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
-    print(f"p-value:    {result.p_value:.6f}")
-
+    for learner_name in ["sklearn", "xgboost", "tabpfn"]:
+        try:
+            result = run_estimation(data, estimator="plr", learner=learner_name)
+            print(f"\n{'='*50}")
+            print(f"Estimator:  {result.estimator}")
+            print(f"Learner:    {result.learner}")
+            print(f"ATE:        {result.coefficient:.4f}")
+            print(f"Std Error:  {result.std_error:.4f}")
+            print(f"95% CI:     [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
+            print(f"p-value:    {result.p_value:.6f}")
+        except Exception as e:
+            print(f"\n{learner_name} failed: {e}")
