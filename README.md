@@ -84,7 +84,7 @@ pytest tests/ -v
 
 Main dependencies installed with `pip install -e ".[all]"`: 
 
-- Polars, DoubleML, TabPFN, scikit-learn
+- Polars, DoubleML, TabPFN, scikit-learn, xgboost
 - Pydantic 
 - PyTorch, skorch 
 - FastAPI, Uvicorn, MLflow
