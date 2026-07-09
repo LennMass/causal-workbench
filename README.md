@@ -100,27 +100,27 @@ Main dependencies installed with `pip install -e ".[all]"`:
 causal-workbench/
 ├── src/
 │   ├── __init__.py
-│   ├── core/                  # Phases 1-2: data + causal logic
+│   ├── core/                  # data + causal logic
 │   │   ├── __init__.py
-│   │   ├── pipeline.py        # Phase 1: Polars data wrangling
-│   │   ├── schemas.py         # Phase 2: Pydantic models
-│   │   ├── estimators.py      # Phase 1: DoubleML + TabPFN runners
-│   │   ├── learners.py        # Phase 4: PyTorch nuisance learners
-│   │   └── text_features.py   # Phase 5: Transformer embeddings
-│   ├── api/                   # Phase 3+: FastAPI app
+│   │   ├── pipeline.py        # Polars data wrangling
+│   │   ├── schemas.py         # Pydantic models
+│   │   ├── estimators.py      # DoubleML + TabPFN runners
+│   │   ├── learners.py        # Nuisance learners
+│   │   └── text_features.py   # Transformer embeddings
+│   ├── api/                   # FastAPI app
 │   │   ├── __init__.py
 │   │   ├── main.py            # FastAPI app + routes
-│   │   └── tasks.py           # Phase 6: Celery tasks
-│   └── agents/                # Phase 7: LLM agent
+│   │   └── tasks.py           # Celery tasks
+│   └── agents/                # LLM agent
 │       ├── __init__.py
 │       └── explainer.py       # Pydantic AI agent
 ├── data/
 │   └── sample_data.csv        # Example dataset to get started
 ├── tests/
 │   ├── __init__.py
-│   ├── test_pipeline.py       # Phase 1 tests
-│   ├── test_schemas.py        # Phase 2 tests
-│   └── test_api.py            # Phase 3 tests
+│   ├── test_pipeline.py       
+│   ├── test_schemas.py        
+│   └── test_api.py            
 ├── docs/
 │   ├── phase1_polars.md
 │   ├── phase2_pydantic.md

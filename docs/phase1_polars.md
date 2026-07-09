@@ -1,4 +1,4 @@
-# Phase 1 — Polars Data Pipeline
+# Polars Data Pipeline
 
 Polars for all data wrangling. Load, clean, and prepare
 observational data for DoubleML.
