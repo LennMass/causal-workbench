@@ -7,3 +7,10 @@ build/
 venv/
 .DS_Store
 celerybeat-schedule
+
+# Runtime-Artefakte
+dump.rdb
+mlflow.db
+mlruns/
+*.sqlite
+
